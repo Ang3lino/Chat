@@ -42,14 +42,14 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Code here executes on main thread after user presses button
                 try {
-                    Toast.makeText(getApplicationContext(), "Mensaje por enviar", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Mensaje por enviar", Toast.LENGTH_SHORT).show();
                     new MulticastPublisher ( // extends a thread
                         UtilFun.serialize (
-                            new MyMessage("Angel", "Hola ", MyState.PUBLIC_MSG)
+                            new MyMessage("Angel", "Finalmente quedo esto", MyState.PUBLIC_MSG)
                         )
                     ).start();
                     // it may not be received or catched by the server
-                    Toast.makeText(getApplicationContext(), "Mesaje enviado", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Mesaje enviado", Toast.LENGTH_SHORT).show();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -60,12 +60,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class OwnServer implements Runnable {
-        protected MulticastSocket socket = null;
-        protected byte[] buf = new byte[Const.MAX_UDP_LENGTH];
+        private MulticastSocket socket;
+        private byte[] buf = new byte[Const.MAX_UDP_LENGTH];
 
         // We cannot modify UI components directly if we are not the main thread
         // I'll use handler in this example
-        protected Handler handler = new Handler();
+        private Handler handler = new Handler();
 
         public void run() {
             try {
