@@ -1,5 +1,7 @@
 package com.example.angel.networkingchat;
 
+import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -7,6 +9,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.angel.networkingchat.utilidades.Const;
+import com.example.angel.networkingchat.utilidades.MulticastPublisher;
 import com.example.angel.networkingchat.utilidades.MyMessage;
 import com.example.angel.networkingchat.utilidades.MyState;
 import com.example.angel.networkingchat.utilidades.UtilFun;
@@ -15,6 +18,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.MulticastSocket;
 
 public class MainActivity extends AppCompatActivity {
     Button btn;
@@ -31,33 +35,58 @@ public class MainActivity extends AppCompatActivity {
                 // Code here executes on main thread after user presses button
                 try {
                     Toast.makeText(getApplicationContext(), "Mensaje por enviar", Toast.LENGTH_LONG).show();
-                    multicast("Angel", "Hola incredulo", MyState.PUBLIC_MSG);
+                    new MulticastPublisher ( // extends a thread
+                        UtilFun.serialize (
+                            new MyMessage("Angel", "Hola incredulo", MyState.PUBLIC_MSG)
+                        )
+                    ).start();
+                    // it may not be received or catched by the server
+                    Toast.makeText(getApplicationContext(), "Mesaje enviado", Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         });
 
+        new Thread(new OwnServer()).start();
     }
 
-    public void multicast(
-            String multicastMessage) throws IOException {
-        multicast(multicastMessage.getBytes());
-    }
+    private class OwnServer implements Runnable {
+        protected MulticastSocket socket = null;
+        protected byte[] buf = new byte[Const.MAX_UDP_LENGTH];
 
-    public void multicast(String usr, String msg, MyState state) throws IOException {
-        byte[] buff = UtilFun.serialize(new MyMessage(usr, msg, state));
-        System.out.println(buff);
-        System.out.println(buff.length);
-        multicast(buff);
-    }
+        // We cannot modify UI components directly if we are not the main thread
+        // I'll use handler in this example
+        protected Handler handler = new Handler();
 
-    public void multicast(byte[] buff) throws IOException {
-        DatagramSocket socket = new DatagramSocket();
-        InetAddress group = InetAddress.getByName("230.0.0.0");
-        DatagramPacket packet = new DatagramPacket(buff, buff.length, group, Const.PORT);
-        socket.send(packet);
-        socket.close();
-    }
+        public void run() {
+            try {
+                socket = new MulticastSocket(Const.PORT);
+                InetAddress group = InetAddress.getByName("230.0.0.0");
+                socket.joinGroup(group);
+                while (true) {
+                    DatagramPacket packet = new DatagramPacket(buf, buf.length);
+                    socket.receive(packet);
+                    final MyMessage msg = (MyMessage) UtilFun.deserialize(packet.getData());
+                    System.out.println(msg);
 
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), msg.toString(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+                }
+                // unreachable statements
+                // socket.leaveGroup(group);
+                // socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
 }

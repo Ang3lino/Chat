@@ -1,5 +1,9 @@
-package com.example.angel.networkingchat.utilidades;
+package com.example.angel.networkingchat.test;
 
+
+import com.example.angel.networkingchat.utilidades.Const;
+import com.example.angel.networkingchat.utilidades.MyMessage;
+import com.example.angel.networkingchat.utilidades.UtilFun;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
