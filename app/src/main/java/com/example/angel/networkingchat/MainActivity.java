@@ -1,5 +1,7 @@
 package com.example.angel.networkingchat;
 
+import android.content.Context;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -29,6 +31,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         btn = findViewById(R.id.btn_test);
+        WifiManager wifi = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if (wifi != null){
+            WifiManager.MulticastLock lock = wifi.createMulticastLock("HelloAndroid");
+            lock.acquire();
+        }
+
 
         btn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -37,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Mensaje por enviar", Toast.LENGTH_LONG).show();
                     new MulticastPublisher ( // extends a thread
                         UtilFun.serialize (
-                            new MyMessage("Angel", "Hola incredulo", MyState.PUBLIC_MSG)
+                            new MyMessage("Angel", "Hola ", MyState.PUBLIC_MSG)
                         )
                     ).start();
                     // it may not be received or catched by the server
