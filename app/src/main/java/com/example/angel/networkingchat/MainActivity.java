@@ -10,6 +10,13 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.angel.networkingchat.utilidades.MulticastPublisher;
+import com.example.angel.networkingchat.utilidades.MyMessage;
+import com.example.angel.networkingchat.utilidades.MyState;
+import com.example.angel.networkingchat.utilidades.UtilFun;
+
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity {
     Button btn;
     TextView txtUsrname;
@@ -45,11 +52,15 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClickLogin(View v) {
         Toast.makeText(getApplicationContext(), "Mensaje por enviar", Toast.LENGTH_SHORT).show();
-        //new MulticastPublisher ( // extends a thread
-        //    UtilFun.serialize (
-        //        new MyMessage("Angel", "Finalmente quedo esto", MyState.PUBLIC_MSG)
-        //    )
-        //).start();
+        try {
+            new MulticastPublisher( // extends a thread
+                UtilFun.serialize (
+                    new MyMessage("Angel", "Finalmente quedo esto", MyState.PUBLIC_MSG)
+                )
+            ).start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         // it may not be received or catched by the server
         Toast.makeText(getApplicationContext(), "Mesaje enviado", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, ChatLobbyActivity.class);
