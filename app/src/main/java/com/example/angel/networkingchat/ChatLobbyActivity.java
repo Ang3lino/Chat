@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.text.emoji.EmojiCompat;
+import android.support.text.emoji.bundled.BundledEmojiCompatConfig;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -37,17 +39,28 @@ public class ChatLobbyActivity extends AppCompatActivity {
         Intent intent = getIntent();
         username = intent.getStringExtra(MainActivity.USERNAME);
         Toast.makeText(this, username, Toast.LENGTH_SHORT).show();
+
         new Thread(new OwnServer(getApplicationContext())).start();
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
+
+
+        replaceFragment(R.id.fragment_container, new ForumFragment());
+    }
+
+    private void replaceFragment(int containerID, Fragment fragmentSelected) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(containerID, fragmentSelected)
+                .commit();
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener navListener =
             new BottomNavigationView.OnNavigationItemSelectedListener() {
                 @Override
                 public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                    Fragment fragmentSelected = null;
+                    Fragment fragmentSelected; // null at first
 
                     switch (menuItem.getItemId()) {
                         case R.id.nav_private_chat:
@@ -56,14 +69,12 @@ public class ChatLobbyActivity extends AppCompatActivity {
                             fragmentSelected = new ForumFragment(); break;
                         case R.id.nav_people_available:
                             fragmentSelected = new ActivePeopleFragment(); break;
+
                         // avoid the posibility of being null
                         default: fragmentSelected = new ForumFragment(); break;
                     }
 
-                    getSupportFragmentManager()
-                            .beginTransaction()
-                            .replace(R.id.fragment_container, fragmentSelected)
-                            .commit();
+                    replaceFragment(R.id.fragment_container, fragmentSelected);
 
                     return true;
                 }
