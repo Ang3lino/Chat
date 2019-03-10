@@ -11,7 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.angel.networkingchat.utilidades.MulticastPublisher;
-import com.example.angel.networkingchat.utilidades.MyMessage;
+import com.example.angel.networkingchat.utilidades.Pack;
 import com.example.angel.networkingchat.utilidades.MyState;
 import com.example.angel.networkingchat.utilidades.UtilFun;
 
@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     public void findViews() {
         btn = findViewById(R.id.btn_login);
         txtUsrname = findViewById(R.id.txt_nick);
+        txtUsrname.setText("usuarioX");
     }
 
     public void onClickLogin(View v) {
@@ -55,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             new MulticastPublisher( // extends a thread
                 UtilFun.serialize (
-                    new MyMessage("Angel", "Finalmente quedo esto", MyState.PUBLIC_MSG)
+                    new Pack("Angel", "Finalmente quedo esto", MyState.PUBLIC_MSG)
                 )
             ).start();
         } catch (IOException e) {

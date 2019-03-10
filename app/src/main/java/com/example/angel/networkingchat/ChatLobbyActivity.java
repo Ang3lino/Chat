@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
-import android.support.text.emoji.EmojiCompat;
-import android.support.text.emoji.bundled.BundledEmojiCompatConfig;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,7 +15,8 @@ import com.example.angel.networkingchat.fragment.ActivePeopleFragment;
 import com.example.angel.networkingchat.fragment.ForumFragment;
 import com.example.angel.networkingchat.fragment.PrivateMessageFragment;
 import com.example.angel.networkingchat.utilidades.Const;
-import com.example.angel.networkingchat.utilidades.MyMessage;
+import com.example.angel.networkingchat.utilidades.MyState;
+import com.example.angel.networkingchat.utilidades.Pack;
 import com.example.angel.networkingchat.utilidades.UtilFun;
 
 import java.io.IOException;
@@ -26,7 +25,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 
 public class ChatLobbyActivity extends AppCompatActivity {
-    String username;
+    public static String sUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +36,8 @@ public class ChatLobbyActivity extends AppCompatActivity {
 
     public void init() {
         Intent intent = getIntent();
-        username = intent.getStringExtra(MainActivity.USERNAME);
-        Toast.makeText(this, username, Toast.LENGTH_SHORT).show();
+        sUsername = intent.getStringExtra(MainActivity.USERNAME);
+        Toast.makeText(this, sUsername, Toast.LENGTH_SHORT).show();
 
         new Thread(new OwnServer(getApplicationContext())).start();
 
@@ -81,7 +80,7 @@ public class ChatLobbyActivity extends AppCompatActivity {
             };
 
     // Nested class ============================
-    private class OwnServer implements Runnable {
+    public class OwnServer implements Runnable {
         private MulticastSocket socket;
         private byte[] buf = new byte[Const.MAX_UDP_LENGTH];
         private Context context;
@@ -89,6 +88,7 @@ public class ChatLobbyActivity extends AppCompatActivity {
         // We cannot modify UI components directly if we are not the main thread
         // I'll use handler in this example
         private Handler handler = new Handler();
+
 
         public OwnServer(Context context) {
             this.context = context;
@@ -102,16 +102,14 @@ public class ChatLobbyActivity extends AppCompatActivity {
                 while (true) {
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     socket.receive(packet);
-                    final MyMessage msg = (MyMessage) UtilFun.deserialize(packet.getData());
-                    System.out.println(msg);
+                    final Pack pack = (Pack) UtilFun.deserialize(packet.getData());
 
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(context, msg.toString(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, pack.toString(), Toast.LENGTH_LONG).show();
                         }
                     });
-
                 }
                 // unreachable statements
                 // socket.leaveGroup(group);

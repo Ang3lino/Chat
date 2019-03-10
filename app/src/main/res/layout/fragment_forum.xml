@@ -6,6 +6,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:id="@+id/txtview_public_msg"
         android:layout_above="@+id/linlay_message"
         android:scrollbars="vertical"
         android:text="Lorem ipsum"
@@ -22,13 +23,14 @@
 
         <android.support.text.emoji.widget.EmojiAppCompatEditText
             android:layout_weight="0.9"
-            android:id="@+id/txt_forum_msg"
+            android:id="@+id/txt_forum_msg_to_send"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:hint="Mensaje"
             />
 
         <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab_send"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="0.1"

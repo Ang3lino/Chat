@@ -13,16 +13,12 @@ public class MulticastPublisher extends Thread {
     }
 
     // overloaded multicast functions
-    public void multicast(
-            String multicastMessage) throws IOException {
-        multicast(multicastMessage.getBytes());
+    public MulticastPublisher(Pack message) throws IOException {
+        buffer = UtilFun.serialize(message);
     }
 
-    public void multicast(String usr, String msg, MyState state) throws IOException {
-        byte[] buff = UtilFun.serialize(new MyMessage(usr, msg, state));
-        System.out.println(buff);
-        System.out.println(buff.length);
-        multicast(buff);
+    public void multicast(String multicastMessage) throws IOException {
+        multicast(multicastMessage.getBytes());
     }
 
     public void multicast(byte[] buff) throws IOException {

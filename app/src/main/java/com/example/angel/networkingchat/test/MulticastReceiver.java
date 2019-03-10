@@ -2,7 +2,7 @@ package com.example.angel.networkingchat.test;
 
 
 import com.example.angel.networkingchat.utilidades.Const;
-import com.example.angel.networkingchat.utilidades.MyMessage;
+import com.example.angel.networkingchat.utilidades.Pack;
 import com.example.angel.networkingchat.utilidades.UtilFun;
 
 import java.io.IOException;
@@ -35,7 +35,7 @@ public class MulticastReceiver extends Thread {
             while (true) {
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 socket.receive(packet);
-                MyMessage msg = (MyMessage) UtilFun.deserialize(packet.getData());
+                Pack msg = (Pack) UtilFun.deserialize(packet.getData());
                 System.out.printf("Thread %d got\n", id);
                 System.out.println(msg);
                 if (msg.getMessage().equals("exit")) {
