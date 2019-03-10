@@ -31,11 +31,6 @@ public class ForumFragment extends Fragment {
     TextView txtPublicMsg;
 
     private void init(View view) {
-        // we need to init EmojiText otherwise the app chashes
-        EmojiCompat.Config config =
-                new BundledEmojiCompatConfig(getContext());
-        EmojiCompat.init(config);
-
         txtToSend = view.findViewById(R.id.txt_forum_msg_to_send);
         fabSend = view.findViewById(R.id.fab_send);
         txtPublicMsg = view.findViewById(R.id.txtview_public_msg);
@@ -60,8 +55,14 @@ public class ForumFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        // we need to init EmojiText otherwise the app chashes
+        EmojiCompat.Config config =
+                new BundledEmojiCompatConfig(getContext());
+        EmojiCompat.init(config);
+
         // you MUST use view in order to get references of the components
         View view =  inflater.inflate(R.layout.fragment_forum, container, false);
         init(view);
