@@ -9,7 +9,8 @@
         android:id="@+id/txtview_public_msg"
         android:layout_above="@+id/linlay_message"
         android:scrollbars="vertical"
-        android:textSize="25sp" />
+        android:textColor="@color/colorPrimaryText"
+        android:textSize="20sp" />
 
     <LinearLayout
         android:id="@+id/linlay_message"

@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
     public void findViews() {
         btn = findViewById(R.id.btn_login);
         txtUsrname = findViewById(R.id.txt_nick);
-        txtUsrname.setText("usuarioX");
+        txtUsrname.setText("k9999");
     }
 
     public void onClickLogin(View v) {
@@ -68,6 +68,5 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(USERNAME, txtUsrname.getText().toString());
         startActivity(intent);
     }
-
 
 }
