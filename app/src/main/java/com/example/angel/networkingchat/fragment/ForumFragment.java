@@ -8,6 +8,7 @@ import android.support.text.emoji.EmojiCompat;
 import android.support.text.emoji.bundled.BundledEmojiCompatConfig;
 import android.support.text.emoji.widget.EmojiAppCompatEditText;
 import android.support.v4.app.Fragment;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +19,6 @@ import com.example.angel.networkingchat.R;
 import com.example.angel.networkingchat.utilidades.MulticastPublisher;
 import com.example.angel.networkingchat.utilidades.Pack;
 import com.example.angel.networkingchat.utilidades.MyState;
-import com.example.angel.networkingchat.utilidades.UtilFun;
 
 import java.io.IOException;
 
@@ -35,6 +35,8 @@ public class ForumFragment extends Fragment {
         fabSend = view.findViewById(R.id.fab_send);
         txtPublicMsg = view.findViewById(R.id.txtview_public_msg);
 
+        txtPublicMsg.setMovementMethod(new ScrollingMovementMethod());
+
         fabSend.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 try {
@@ -44,13 +46,18 @@ public class ForumFragment extends Fragment {
                             MyState.PUBLIC_MSG
                     );
                     new MulticastPublisher(pack).start(); // don't forget to start the thread!
+                    appendText(txtToSend.getText().toString());
                     txtToSend.setText(""); // clear the text
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         });
+    }
 
+    public void appendText(String str) {
+        String current = txtPublicMsg.getText().toString();
+        txtPublicMsg.setText(String.format("%s\n%s", current, str));
     }
 
     @Nullable
@@ -58,7 +65,7 @@ public class ForumFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        // we need to init EmojiText otherwise the app chashes
+        // we need to init EmojiText otherwise the app chashes. Start the config at this method as well
         EmojiCompat.Config config =
                 new BundledEmojiCompatConfig(getContext());
         EmojiCompat.init(config);
@@ -68,6 +75,5 @@ public class ForumFragment extends Fragment {
         init(view);
         return view;
     }
-
 
 }

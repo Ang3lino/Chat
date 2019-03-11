@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.UnknownHostException;
 
 public class ChatLobbyActivity extends AppCompatActivity {
     public static String sUsername;
@@ -39,6 +40,7 @@ public class ChatLobbyActivity extends AppCompatActivity {
         sUsername = intent.getStringExtra(MainActivity.USERNAME);
         Toast.makeText(this, sUsername, Toast.LENGTH_SHORT).show();
 
+        // start the server
         new Thread(new OwnServer(getApplicationContext())).start();
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
@@ -79,7 +81,7 @@ public class ChatLobbyActivity extends AppCompatActivity {
                 }
             };
 
-    // Nested class ============================
+    // Nested class, it does the role of controller as well
     public class OwnServer implements Runnable {
         private MulticastSocket socket;
         private byte[] buf = new byte[Const.MAX_UDP_LENGTH];
@@ -89,16 +91,32 @@ public class ChatLobbyActivity extends AppCompatActivity {
         // I'll use handler in this example
         private Handler handler = new Handler();
 
-
         public OwnServer(Context context) {
             this.context = context;
         }
 
-        public void run() {
+        private void handlePublicMessage(Pack p) {
+
+        }
+
+        private void initSocket() {
             try {
-                socket = new MulticastSocket(Const.PORT);
-                InetAddress group = InetAddress.getByName("230.0.0.0");
-                socket.joinGroup(group);
+                socket = new MulticastSocket(Const.PORT); // it may throw IOException
+                InetAddress group = null;
+                try {
+                    group = InetAddress.getByName("230.0.0.0");
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
+                socket.joinGroup(group); // it may throw IOException
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void run() {
+            initSocket();
+            try {
                 while (true) {
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     socket.receive(packet);
@@ -110,7 +128,11 @@ public class ChatLobbyActivity extends AppCompatActivity {
                             Toast.makeText(context, pack.toString(), Toast.LENGTH_LONG).show();
                         }
                     });
+
+                    MyState currentState = pack.getState();
+                    if (currentState == MyState.PUBLIC_MSG) handlePublicMessage(pack);
                 }
+
                 // unreachable statements
                 // socket.leaveGroup(group);
                 // socket.close();
@@ -120,5 +142,8 @@ public class ChatLobbyActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+
     }
+
+
 }
