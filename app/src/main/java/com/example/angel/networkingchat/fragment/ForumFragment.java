@@ -46,7 +46,7 @@ public class ForumFragment extends Fragment {
                             MyState.PUBLIC_MSG
                     );
                     new MulticastPublisher(pack).start(); // don't forget to start the thread!
-                    appendText(txtToSend.getText().toString());
+                    appendMessage(txtToSend.getText().toString());
                     txtToSend.setText(""); // clear the text
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -55,7 +55,7 @@ public class ForumFragment extends Fragment {
         });
     }
 
-    public void appendText(String str) {
+    public void appendMessage(String str) {
         String current = txtPublicMsg.getText().toString();
         txtPublicMsg.setText(String.format("%s\n%s", current, str));
     }

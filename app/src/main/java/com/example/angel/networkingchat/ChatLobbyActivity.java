@@ -15,6 +15,7 @@ import com.example.angel.networkingchat.fragment.ActivePeopleFragment;
 import com.example.angel.networkingchat.fragment.ForumFragment;
 import com.example.angel.networkingchat.fragment.PrivateMessageFragment;
 import com.example.angel.networkingchat.utilidades.Const;
+import com.example.angel.networkingchat.utilidades.MutableStore;
 import com.example.angel.networkingchat.utilidades.MyState;
 import com.example.angel.networkingchat.utilidades.Pack;
 import com.example.angel.networkingchat.utilidades.UtilFun;
@@ -81,6 +82,16 @@ public class ChatLobbyActivity extends AppCompatActivity {
                 }
             };
 
+    private void handlePublicMessage(Pack p) {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        String msgToAdd = String.format("%s: %s", p.getNickname(), p.getMessage());
+        if (fragment instanceof ForumFragment) {
+            // do something with the fragment
+            ((ForumFragment) fragment).appendMessage(msgToAdd);
+        }
+        MutableStore.appendGlobalMessages(msgToAdd);
+    }
+
     // Nested class, it does the role of controller as well
     public class OwnServer implements Runnable {
         private MulticastSocket socket;
@@ -95,9 +106,6 @@ public class ChatLobbyActivity extends AppCompatActivity {
             this.context = context;
         }
 
-        private void handlePublicMessage(Pack p) {
-
-        }
 
         private void initSocket() {
             try {
@@ -130,7 +138,13 @@ public class ChatLobbyActivity extends AppCompatActivity {
                     });
 
                     MyState currentState = pack.getState();
-                    if (currentState == MyState.PUBLIC_MSG) handlePublicMessage(pack);
+                    if (currentState == MyState.PUBLIC_MSG)
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                handlePublicMessage(pack);
+                            }
+                        });
                 }
 
                 // unreachable statements
