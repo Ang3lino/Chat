@@ -89,7 +89,7 @@ public class ChatLobbyActivity extends AppCompatActivity {
             // do something with the fragment
             ((ForumFragment) fragment).appendMessage(msgToAdd);
         }
-        MutableStore.appendGlobalMessages(msgToAdd);
+        MutableStore.appendGlobalMessages(msgToAdd + "\n");
     }
 
     // Nested class, it does the role of controller as well

@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.example.angel.networkingchat.ChatLobbyActivity;
 import com.example.angel.networkingchat.R;
 import com.example.angel.networkingchat.utilidades.MulticastPublisher;
+import com.example.angel.networkingchat.utilidades.MutableStore;
 import com.example.angel.networkingchat.utilidades.Pack;
 import com.example.angel.networkingchat.utilidades.MyState;
 
@@ -36,6 +37,7 @@ public class ForumFragment extends Fragment {
         txtPublicMsg = view.findViewById(R.id.txtview_public_msg);
 
         txtPublicMsg.setMovementMethod(new ScrollingMovementMethod());
+        txtPublicMsg.setText(MutableStore.getGlobalMessages());
 
         fabSend.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -46,7 +48,6 @@ public class ForumFragment extends Fragment {
                             MyState.PUBLIC_MSG
                     );
                     new MulticastPublisher(pack).start(); // don't forget to start the thread!
-                    appendMessage(txtToSend.getText().toString());
                     txtToSend.setText(""); // clear the text
                 } catch (IOException e) {
                     e.printStackTrace();

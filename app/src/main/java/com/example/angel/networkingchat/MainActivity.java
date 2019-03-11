@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             new MulticastPublisher( // extends a thread
                 UtilFun.serialize (
-                    new Pack("Angel", "Finalmente quedo esto", MyState.PUBLIC_MSG)
+                    new Pack("Angel", "Finalmente quedo esto", MyState.LOG_IN)
                 )
             ).start();
         } catch (IOException e) {

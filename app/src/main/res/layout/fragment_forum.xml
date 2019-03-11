@@ -9,7 +9,6 @@
         android:id="@+id/txtview_public_msg"
         android:layout_above="@+id/linlay_message"
         android:scrollbars="vertical"
-        android:text="Lorem ipsum"
         android:textSize="25sp" />
 
     <LinearLayout
