@@ -8,6 +8,8 @@ import android.support.text.emoji.EmojiCompat;
 import android.support.text.emoji.bundled.BundledEmojiCompatConfig;
 import android.support.text.emoji.widget.EmojiAppCompatEditText;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,12 +18,15 @@ import android.widget.TextView;
 
 import com.example.angel.networkingchat.ChatLobbyActivity;
 import com.example.angel.networkingchat.R;
+import com.example.angel.networkingchat.recyclerViewAvailablePeople.PersonAvailableAdapter;
+import com.example.angel.networkingchat.recyclerViewAvailablePeople.PersonAvailableItem;
 import com.example.angel.networkingchat.utilidades.MulticastPublisher;
 import com.example.angel.networkingchat.utilidades.MutableStore;
 import com.example.angel.networkingchat.utilidades.Pack;
 import com.example.angel.networkingchat.utilidades.MyState;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 // Do not use this new class if u wanna give support to every single android version
 // import android.support.text.emoji.widget.EmojiEditText;
@@ -30,6 +35,7 @@ public class ForumFragment extends Fragment {
     EmojiAppCompatEditText txtToSend; // instance for giving support to old android version
     FloatingActionButton fabSend; // instance part of material design
     TextView txtPublicMsg;
+
 
     private void init(View view) {
         txtToSend = view.findViewById(R.id.txt_forum_msg_to_send);
@@ -41,19 +47,24 @@ public class ForumFragment extends Fragment {
 
         fabSend.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                try {
-                    Pack pack = new Pack (
-                            ChatLobbyActivity.sUsername,
-                            txtToSend.getText().toString(),
-                            MyState.PUBLIC_MSG
-                    );
-                    new MulticastPublisher(pack).start(); // don't forget to start the thread!
-                    txtToSend.setText(""); // clear the text
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                onClickSendButton(v);
             }
         });
+
+    }
+
+    public void onClickSendButton(View v) {
+        try {
+            Pack pack = new Pack (
+                    ChatLobbyActivity.sUsername,
+                    txtToSend.getText().toString(),
+                    MyState.PUBLIC_MSG
+            );
+            new MulticastPublisher(pack).start(); // don't forget to start the thread!
+            txtToSend.setText(""); // clear the text
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void appendMessage(String str) {
