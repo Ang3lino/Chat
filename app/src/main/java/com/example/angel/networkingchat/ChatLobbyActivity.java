@@ -160,14 +160,14 @@ public class ChatLobbyActivity extends AppCompatActivity {
                         }
                     });
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
                 }
-
             }
+
+        }
         // unreachable statements
         // socket.leaveGroup(group);
         // socket.close();
