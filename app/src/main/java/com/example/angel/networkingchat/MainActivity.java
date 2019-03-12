@@ -52,20 +52,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClickLogin(View v) {
-        Toast.makeText(getApplicationContext(), "Mensaje por enviar", Toast.LENGTH_SHORT).show();
+        String username = txtUsrname.getText().toString();
+        Pack pack = new Pack(username, "Nuevo usuario logueado", MyState.LOG_IN);
+
         try {
-            new MulticastPublisher( // extends a thread
-                UtilFun.serialize (
-                    new Pack("Angel", "Finalmente quedo esto", MyState.LOG_IN)
-                )
-            ).start();
+            // it may not be received or catched by the server
+            new MulticastPublisher(UtilFun.serialize (pack)).start();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // it may not be received or catched by the server
-        Toast.makeText(getApplicationContext(), "Mesaje enviado", Toast.LENGTH_SHORT).show();
+
         Intent intent = new Intent(this, ChatLobbyActivity.class);
-        intent.putExtra(USERNAME, txtUsrname.getText().toString());
+        intent.putExtra(USERNAME, username);
         startActivity(intent);
     }
 

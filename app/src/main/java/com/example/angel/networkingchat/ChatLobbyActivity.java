@@ -14,6 +14,7 @@ import android.os.Handler;
 import com.example.angel.networkingchat.fragment.ActivePeopleFragment;
 import com.example.angel.networkingchat.fragment.ForumFragment;
 import com.example.angel.networkingchat.fragment.PrivateMessageFragment;
+import com.example.angel.networkingchat.recyclerViewAvailablePeople.PersonAvailableItem;
 import com.example.angel.networkingchat.utilidades.Const;
 import com.example.angel.networkingchat.utilidades.MutableStore;
 import com.example.angel.networkingchat.utilidades.MyState;
@@ -37,12 +38,13 @@ public class ChatLobbyActivity extends AppCompatActivity {
     }
 
     public void init() {
-        Intent intent = getIntent();
-        sUsername = intent.getStringExtra(MainActivity.USERNAME);
-        Toast.makeText(this, sUsername, Toast.LENGTH_SHORT).show();
-
         // start the server
         new Thread(new OwnServer(getApplicationContext())).start();
+
+        Intent intent = getIntent();
+        sUsername = intent.getStringExtra(MainActivity.USERNAME);
+        //Toast.makeText(this, sUsername, Toast.LENGTH_SHORT).show();
+
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
@@ -92,6 +94,19 @@ public class ChatLobbyActivity extends AppCompatActivity {
         MutableStore.appendGlobalMessages(msgToAdd + "\n");
     }
 
+    private void handleLogIn(Pack p) {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        PersonAvailableItem person =
+                new PersonAvailableItem(R.drawable.ic_tag_faces_black_24dp, p.getNickname(), "Address");
+        // if the user is watching this fragment add data and notify to the adapter
+        if (fragment instanceof ActivePeopleFragment) {
+            ((ActivePeopleFragment) fragment).addActivePerson(person);
+
+        } else { // just add the person to the arrayList, when the user look this fragment will load it
+            MutableStore.getAvailables().add(person);
+        }
+    }
+
     // Nested class, it does the role of controller as well
     public class OwnServer implements Runnable {
         private MulticastSocket socket;
@@ -105,7 +120,6 @@ public class ChatLobbyActivity extends AppCompatActivity {
         public OwnServer(Context context) {
             this.context = context;
         }
-
 
         private void initSocket() {
             try {
@@ -124,8 +138,8 @@ public class ChatLobbyActivity extends AppCompatActivity {
 
         public void run() {
             initSocket();
-            try {
-                while (true) {
+            while (true) {
+                try {
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     socket.receive(packet);
                     final Pack pack = (Pack) UtilFun.deserialize(packet.getData());
@@ -137,26 +151,26 @@ public class ChatLobbyActivity extends AppCompatActivity {
                         }
                     });
 
-                    MyState currentState = pack.getState();
-                    if (currentState == MyState.PUBLIC_MSG)
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                handlePublicMessage(pack);
-                            }
-                        });
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            MyState currentState = pack.getState();
+                            if (currentState == MyState.PUBLIC_MSG) handlePublicMessage(pack);
+                            if (currentState == MyState.LOG_IN) handleLogIn(pack);
+                        }
+                    });
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 }
 
-                // unreachable statements
-                // socket.leaveGroup(group);
-                // socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
             }
-        }
-
+        // unreachable statements
+        // socket.leaveGroup(group);
+        // socket.close();
     }
 
 
