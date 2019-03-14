@@ -1,13 +1,18 @@
 package com.example.angel.networkingchat;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 import android.os.Handler;
 
@@ -16,11 +21,14 @@ import com.example.angel.networkingchat.fragment.ForumFragment;
 import com.example.angel.networkingchat.fragment.PrivateMessageFragment;
 import com.example.angel.networkingchat.recyclerViewAvailablePeople.PersonAvailableItem;
 import com.example.angel.networkingchat.utilidades.Const;
+import com.example.angel.networkingchat.utilidades.MulticastPublisher;
 import com.example.angel.networkingchat.utilidades.MutableStore;
 import com.example.angel.networkingchat.utilidades.MyState;
 import com.example.angel.networkingchat.utilidades.Pack;
 import com.example.angel.networkingchat.utilidades.UtilFun;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -29,6 +37,9 @@ import java.net.UnknownHostException;
 
 public class ChatLobbyActivity extends AppCompatActivity {
     public static String sUsername;
+    private static final int READ_REQUEST_CODE = 42;
+
+    FloatingActionButton mFabSendFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,12 +56,70 @@ public class ChatLobbyActivity extends AppCompatActivity {
         sUsername = intent.getStringExtra(MainActivity.USERNAME);
         //Toast.makeText(this, sUsername, Toast.LENGTH_SHORT).show();
 
-
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
-
-
         replaceFragment(R.id.fragment_container, new ForumFragment());
+
+        mFabSendFile = findViewById(R.id.fab_send_file);
+        mFabSendFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendFile(v);
+            }
+        });
+    }
+
+    private void sendFile(View v) {
+        Intent intent = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        } else {
+            Toast.makeText(this, "No tiene la version de android minima requerida, no se "
+                    + "puede enviar el archivo", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Filter to only show results that can be "opened", such as a
+        // file (as opposed to a list of contacts or timezones)
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        // To search for all documents available
+        intent.setType("*/*");
+
+        startActivityForResult(intent, READ_REQUEST_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        // The ACTION_OPEN_DOCUMENT intent was sent with the request code
+        // READ_REQUEST_CODE. If the request code seen here doesn't match, it's the
+        // response to some other intent, and the code below shouldn't run at all.
+
+        if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            // The document selected by the user won't be returned in the intent.
+            // Instead, a URI to that document will be contained in the return intent
+            // provided to this method as a parameter.
+            // Pull that URI using resultData.getData().
+            Uri uri = null;
+            if (data != null) {
+                uri = data.getData();
+                File file = new File(uri.getPath());
+                Toast.makeText(this, file.toString(), Toast.LENGTH_SHORT).show();
+                try {
+                    byte[] bytes = UtilFun.serialize(
+                            new Pack(sUsername, "", MyState.FILE_SENT, file));
+                    if (bytes.length > Const.MAX_UDP_LENGTH) {
+                        Toast.makeText(this, "El archivo mide mas de "
+                                + Const.MAX_UDP_LENGTH + " bytes, no se envio.", Toast.LENGTH_SHORT)
+                                .show();
+                        return;
+                    }
+                    new MulticastPublisher(bytes).start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private void replaceFragment(int containerID, Fragment fragmentSelected) {
