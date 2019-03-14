@@ -11,6 +11,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -27,17 +28,24 @@ import com.example.angel.networkingchat.utilidades.MyState;
 import com.example.angel.networkingchat.utilidades.Pack;
 import com.example.angel.networkingchat.utilidades.UtilFun;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 
 public class ChatLobbyActivity extends AppCompatActivity {
     public static String sUsername;
+    private static String TAG = "debug";
     private static final int READ_REQUEST_CODE = 42;
+
 
     FloatingActionButton mFabSendFile;
 
@@ -103,8 +111,11 @@ public class ChatLobbyActivity extends AppCompatActivity {
             Uri uri = null;
             if (data != null) {
                 uri = data.getData();
-                File file = new File(uri.getPath());
-                Toast.makeText(this, file.toString(), Toast.LENGTH_SHORT).show();
+                String path = uri.getPath();
+                File file = new File(path);
+                int n = (int) file.length();
+
+                Toast.makeText(this, path, Toast.LENGTH_SHORT).show();
                 try {
                     byte[] bytes = UtilFun.serialize(
                             new Pack(sUsername, "", MyState.FILE_SENT, file));
@@ -176,6 +187,37 @@ public class ChatLobbyActivity extends AppCompatActivity {
         }
     }
 
+    private void handleFileSent(final Pack p) {
+        final File file = p.getFile();
+        final byte[] b = new byte[(int) file.length()];
+        FileOutputStream fos = null;
+        try {
+            // final FileInputStream fileInputStream = new FileInputStream(file);
+            // fileInputStream.read(b);
+            String src = "bla bla bla bla";
+            fos = openFileOutput(file.getName(), MODE_PRIVATE);
+            fos.write(src.getBytes());
+            fos.flush();
+            int n = (int) file.length();
+            Toast.makeText(this, ""+file.length(), Toast.LENGTH_LONG).show();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e1) {
+            System.out.println("Error Reading The File.");
+            e1.printStackTrace();
+        } finally {
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) { e.printStackTrace(); }
+            }
+        }
+        Toast.makeText(this,
+                String.format("Saved to %s/%s", getFilesDir(), file.getName()),
+                Toast.LENGTH_LONG).show();
+    }
+
     // Nested class, it does the role of controller as well
     public class OwnServer implements Runnable {
         private MulticastSocket socket;
@@ -226,6 +268,7 @@ public class ChatLobbyActivity extends AppCompatActivity {
                             MyState currentState = pack.getState();
                             if (currentState == MyState.PUBLIC_MSG) handlePublicMessage(pack);
                             if (currentState == MyState.LOG_IN) handleLogIn(pack);
+                            //if (currentState == MyState.FILE_SENT) handleFileSent(pack);
                         }
                     });
 
