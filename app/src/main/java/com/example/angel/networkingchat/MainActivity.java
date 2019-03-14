@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
     public void findViews() {
         btn = findViewById(R.id.btn_login);
         txtUsrname = findViewById(R.id.txt_nick);
-        txtUsrname.setText("k9999");
+        txtUsrname.setText("usuario");
     }
 
     public void onClickLogin(View v) {

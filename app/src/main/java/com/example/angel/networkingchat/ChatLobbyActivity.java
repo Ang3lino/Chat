@@ -1,9 +1,12 @@
 package com.example.angel.networkingchat;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
@@ -27,6 +30,8 @@ import com.example.angel.networkingchat.utilidades.MutableStore;
 import com.example.angel.networkingchat.utilidades.MyState;
 import com.example.angel.networkingchat.utilidades.Pack;
 import com.example.angel.networkingchat.utilidades.UtilFun;
+import com.nbsp.materialfilepicker.MaterialFilePicker;
+import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -40,6 +45,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.regex.Pattern;
 
 public class ChatLobbyActivity extends AppCompatActivity {
     public static String sUsername;
@@ -77,24 +83,41 @@ public class ChatLobbyActivity extends AppCompatActivity {
         });
     }
 
+    private static final int REQUEST_WRITE_CODE = 2;
+
     private void sendFile(View v) {
-        Intent intent = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-            intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        } else {
-            Toast.makeText(this, "No tiene la version de android minima requerida, no se "
-                    + "puede enviar el archivo", Toast.LENGTH_SHORT).show();
-            return;
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M
+                && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_CODE);
         }
 
-        // Filter to only show results that can be "opened", such as a
-        // file (as opposed to a list of contacts or timezones)
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        new MaterialFilePicker()
+                .withActivity(this)
+                .withRequestCode(READ_REQUEST_CODE)
+                .withHiddenFiles(true) // Show hidden files and folders
+                .start();
 
-        // To search for all documents available
-        intent.setType("*/*");
+        // new MaterialFilePicker()
+        //         .withActivity(this)
+        //         .withRequestCode(READ_REQUEST_CODE)
+        //         .withFilter(Pattern.compile(".*\\.png$")) // Filtering files and directories by file name using regexp
+        //         .withFilterDirectories(true) // Set directories filterable (false by default)
+        //         .withHiddenFiles(true) // Show hidden files and folders
+        //         .start();
+    }
 
-        startActivityForResult(intent, READ_REQUEST_CODE);
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_WRITE_CODE:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    Toast.makeText(this, "Permisos dados", Toast.LENGTH_SHORT).show();
+                else {
+                    Toast.makeText(this, "Permisos NO dados", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+        }
     }
 
     @Override
@@ -104,32 +127,8 @@ public class ChatLobbyActivity extends AppCompatActivity {
         // response to some other intent, and the code below shouldn't run at all.
 
         if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            // The document selected by the user won't be returned in the intent.
-            // Instead, a URI to that document will be contained in the return intent
-            // provided to this method as a parameter.
-            // Pull that URI using resultData.getData().
-            Uri uri = null;
-            if (data != null) {
-                uri = data.getData();
-                String path = uri.getPath();
-                File file = new File(path);
-                int n = (int) file.length();
-
-                Toast.makeText(this, path, Toast.LENGTH_SHORT).show();
-                try {
-                    byte[] bytes = UtilFun.serialize(
-                            new Pack(sUsername, "", MyState.FILE_SENT, file));
-                    if (bytes.length > Const.MAX_UDP_LENGTH) {
-                        Toast.makeText(this, "El archivo mide mas de "
-                                + Const.MAX_UDP_LENGTH + " bytes, no se envio.", Toast.LENGTH_SHORT)
-                                .show();
-                        return;
-                    }
-                    new MulticastPublisher(bytes).start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            String path = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
+            Toast.makeText(this, path, Toast.LENGTH_LONG).show();
         }
     }
 
