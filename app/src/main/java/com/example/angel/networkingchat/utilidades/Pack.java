@@ -9,20 +9,17 @@ public class Pack implements Serializable {
     private String nickname, message;
     private MyState state;
     private File file; // this may be null
-
-    public void setFile(File file) {
-        this.file = file;
-    }
-
-    public File getFile() {
-        return file;
-    }
+    private byte[] bytes;
 
     public Pack(String nick, String msg, MyState state) {
         nickname = nick;
         message = msg;
         this.state = state;
         file = null;
+    }
+
+    public Pack(MyState state) {
+        this.state = state;
     }
 
     public Pack(String nick, String msg, MyState state, File file) {
@@ -32,12 +29,22 @@ public class Pack implements Serializable {
 
     @Override
     public String toString() {
-        if (file != null) return  String.format("State: %s\nNickname: %s\nMessage: %s\nFile?: %s",
-                state, nickname, message, file.toString());
+        if (file != null) {
+            StringBuilder builder = new StringBuilder();
+            for (byte aByte : bytes) builder.append(aByte);
+            return  String.format("State: %s\nNickname: %s\nMessage: %s\nFile?: %s\nBytes: %s",
+                    state, nickname, message, file.toString(), builder.toString());
+        }
         return  String.format("State: %s\nNickname: %s\nMessage: %s\nFile?: %s",
                 state, nickname, message, "null");
     }
 
+    public void setFile(File file) { this.file = file; }
+    public void setBytes(byte[] bytes) { this.bytes = bytes; }
+    public void setState(MyState state) { this.state = state; }
+
+    public File getFile() { return file; }
+    public byte[] getBytes() { return bytes; }
     public String getNickname() { return nickname; }
     public String getMessage() { return message; }
     public MyState getState() { return state; }

@@ -52,7 +52,6 @@ public class ChatLobbyActivity extends AppCompatActivity {
     private static String TAG = "debug";
     private static final int READ_REQUEST_CODE = 42;
 
-
     FloatingActionButton mFabSendFile;
 
     @Override
@@ -78,14 +77,14 @@ public class ChatLobbyActivity extends AppCompatActivity {
         mFabSendFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendFile(v);
+                startMaterialPicker(v);
             }
         });
     }
 
     private static final int REQUEST_WRITE_CODE = 2;
 
-    private void sendFile(View v) {
+    private void startMaterialPicker(View v) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M
                 && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
@@ -129,6 +128,26 @@ public class ChatLobbyActivity extends AppCompatActivity {
         if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             String path = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
             Toast.makeText(this, path, Toast.LENGTH_LONG).show();
+            sendFile(new File(path));
+        }
+    }
+
+    private void sendFile(File file) {
+        Pack pack = new Pack(MyState.FILE_SENT);
+        pack.setFile(file);
+        byte[] bytes = UtilFun.fileToBytes(file);
+        if (bytes.length > Const.MAX_UDP_LENGTH) {
+            Toast.makeText(getApplicationContext(), "" + bytes.length,
+                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Archivo muy grande, no se enviara.",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        pack.setBytes(bytes);
+        try {
+            new MulticastPublisher(pack).start();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -187,33 +206,23 @@ public class ChatLobbyActivity extends AppCompatActivity {
     }
 
     private void handleFileSent(final Pack p) {
-        final File file = p.getFile();
-        final byte[] b = new byte[(int) file.length()];
-        FileOutputStream fos = null;
-        try {
-            // final FileInputStream fileInputStream = new FileInputStream(file);
-            // fileInputStream.read(b);
-            String src = "bla bla bla bla";
-            fos = openFileOutput(file.getName(), MODE_PRIVATE);
-            fos.write(src.getBytes());
-            fos.flush();
-            int n = (int) file.length();
-            Toast.makeText(this, ""+file.length(), Toast.LENGTH_LONG).show();
+        byte[] source = p.getBytes();
+        String filename = p.getFile().getName();
 
+        File file = new File (getFilesDir(), filename);
+        try {
+            // The file is only visible by the app
+            FileOutputStream fos = openFileOutput(filename, Context.MODE_PRIVATE);
+            fos.write(source);
+            fos.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-        } catch (IOException e1) {
-            System.out.println("Error Reading The File.");
-            e1.printStackTrace();
-        } finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) { e.printStackTrace(); }
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        Toast.makeText(this,
-                String.format("Saved to %s/%s", getFilesDir(), file.getName()),
+
+        Toast.makeText(getApplicationContext(),
+                String.format("Archivo %s guardado en %s", file.toString(), file.getAbsolutePath()),
                 Toast.LENGTH_LONG).show();
     }
 
@@ -258,15 +267,12 @@ public class ChatLobbyActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             Toast.makeText(context, pack.toString(), Toast.LENGTH_LONG).show();
-                        }
-                    });
-
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
                             MyState currentState = pack.getState();
-                            if (currentState == MyState.PUBLIC_MSG) handlePublicMessage(pack);
-                            if (currentState == MyState.LOG_IN) handleLogIn(pack);
+                            switch (currentState) {
+                                case PUBLIC_MSG: handlePublicMessage(pack); break;
+                                case LOG_IN: handleLogIn(pack); break;
+                                case FILE_SENT: handleFileSent(pack);
+                            }
                             //if (currentState == MyState.FILE_SENT) handleFileSent(pack);
                         }
                     });

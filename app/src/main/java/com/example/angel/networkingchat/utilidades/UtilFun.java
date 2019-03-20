@@ -26,6 +26,31 @@ public class UtilFun {
         }
     }
 
+    public static boolean writeBytes(byte[] src, String filepath) {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(filepath);
+            fos.write(src);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    public static byte[] fileToBytes(File file) {
+        int len = (int) file.length();
+        byte[] bytes = new byte[len];
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(file);
+            fis.read(bytes);
+            fis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bytes;
+    }
 
     public static byte[] serialize(Object obj) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
