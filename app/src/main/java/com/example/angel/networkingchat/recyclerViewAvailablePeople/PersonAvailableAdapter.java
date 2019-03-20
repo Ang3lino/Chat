@@ -20,6 +20,15 @@ public class PersonAvailableAdapter
         extends RecyclerView.Adapter<PersonAvailableAdapter.PersonAvailableViewHolder> {
 
     private ArrayList<PersonAvailableItem> mAvailableList;
+    private OnItemClickListener mListener;
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        mListener = listener;
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(int position);
+    }
 
     // In this class will store the reference for the values for every item created
     public static class PersonAvailableViewHolder extends RecyclerView.ViewHolder {
@@ -28,12 +37,24 @@ public class PersonAvailableAdapter
         public TextView addr;
 
         // Here we get the reference for the components given for the item
-        public PersonAvailableViewHolder(@NonNull View itemView) {
+        public PersonAvailableViewHolder(@NonNull View itemView, final OnItemClickListener listener) {
             super(itemView);
 
             img = itemView.findViewById(R.id.img_profile);
             nick = itemView.findViewById(R.id.txt_usr_nick);
             addr = itemView.findViewById(R.id.txt_addr_usr);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (listener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            listener.onItemClick(position);
+                        }
+                    }
+                }
+            });
         }
     }
 
@@ -46,7 +67,7 @@ public class PersonAvailableAdapter
     public PersonAvailableViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View v = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.item_connected_person, viewGroup, false);
-        PersonAvailableViewHolder pavh = new PersonAvailableViewHolder(v);
+        PersonAvailableViewHolder pavh = new PersonAvailableViewHolder(v, mListener);
         return pavh;
     }
 

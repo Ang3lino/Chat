@@ -10,8 +10,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.angel.networkingchat.R;
+import com.example.angel.networkingchat.dialog.PrivateMessageDialog;
 import com.example.angel.networkingchat.recyclerViewAvailablePeople.PersonAvailableAdapter;
 import com.example.angel.networkingchat.recyclerViewAvailablePeople.PersonAvailableItem;
 import com.example.angel.networkingchat.utilidades.MutableStore;
@@ -20,7 +22,7 @@ import java.util.ArrayList;
 
 public class ActivePeopleFragment extends Fragment {
     private RecyclerView mRecyclerView;
-    private RecyclerView.Adapter mAdapter;
+    private PersonAvailableAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
 
     private void init(View view) {
@@ -34,6 +36,16 @@ public class ActivePeopleFragment extends Fragment {
 
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
+
+        mAdapter.setOnItemClickListener(new PersonAvailableAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(int position) { // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                String nick = MutableStore.getAvailables().get(position).getNick(); // get position from ArrayList
+                Toast.makeText(getContext(), nick, Toast.LENGTH_LONG).show();
+                PrivateMessageDialog dialog = new PrivateMessageDialog();
+                dialog.show(getActivity().getSupportFragmentManager(), "Ejemplo");
+            }
+        });
     }
 
     public void addActivePerson(PersonAvailableItem person) {

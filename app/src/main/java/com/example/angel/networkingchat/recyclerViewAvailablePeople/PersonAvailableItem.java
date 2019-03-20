@@ -5,7 +5,6 @@ public class PersonAvailableItem {
     private String mNick;
     private String mAddr;
 
-
     public PersonAvailableItem(int img, String nick, String addr) {
         mImg = img;
         mNick = nick;
