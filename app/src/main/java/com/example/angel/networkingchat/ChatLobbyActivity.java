@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
@@ -219,25 +220,52 @@ public class ChatLobbyActivity extends AppCompatActivity {
         }
     }
 
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static final String PERSONAL_DIRECTORY = "NetworkChat";
+
+    private boolean createMyFolder() {
+        File file = new File (Environment.getExternalStorageDirectory(), PERSONAL_DIRECTORY);
+        if (!file.exists()) {
+            boolean ok = file.mkdir();
+            if (!ok) {
+                Toast.makeText(getApplicationContext(), "No se pudo crear el folder",
+                        Toast.LENGTH_LONG).show();
+            }
+            return ok;
+        }
+        return true;
+    }
+
     private void handleFileSent(final Pack p) {
         byte[] source = p.getBytes();
         String filename = p.getFile().getName();
 
-        File file = new File (getFilesDir(), filename);
-        try {
-            // The file is only visible by the app
-            FileOutputStream fos = openFileOutput(filename, Context.MODE_PRIVATE);
-            fos.write(source);
-            fos.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (isExternalStorageWritable() && createMyFolder()) {
+            File file = new File (Environment.getExternalStorageDirectory() + "/"
+                    + PERSONAL_DIRECTORY, filename);
+            try {
+                // The file is only visible by the app
+                FileOutputStream fos = new FileOutputStream(file);
+                fos.write(source);
+                fos.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Toast.makeText(getApplicationContext(),
+                    String.format("Archivo %s guardado en %s", file.toString(), file.getAbsolutePath()),
+                    Toast.LENGTH_LONG).show();
         }
 
-        Toast.makeText(getApplicationContext(),
-                String.format("Archivo %s guardado en %s", file.toString(), file.getAbsolutePath()),
-                Toast.LENGTH_LONG).show();
     }
 
     // Nested class, it does the role of controller as well
@@ -285,7 +313,7 @@ public class ChatLobbyActivity extends AppCompatActivity {
                             switch (currentState) {
                                 case PUBLIC_MSG: handlePublicMessage(pack); break;
                                 case LOG_IN: handleLogIn(pack); break;
-                                case FILE_SENT: handleFileSent(pack);
+                                case FILE_SENT: handleFileSent(pack); break;
                                 case PRIVATE_MSG: handlePrivateMessage(pack); break;
                             }
                             //if (currentState == MyState.FILE_SENT) handleFileSent(pack);
