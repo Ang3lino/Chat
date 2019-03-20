@@ -10,7 +10,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
+import com.example.angel.networkingchat.MainActivity;
 import com.example.angel.networkingchat.R;
+import com.example.angel.networkingchat.fragment.ActivePeopleFragment;
+import com.example.angel.networkingchat.utilidades.MulticastPublisher;
+import com.example.angel.networkingchat.utilidades.MutableStore;
+import com.example.angel.networkingchat.utilidades.MyState;
+import com.example.angel.networkingchat.utilidades.Pack;
+import com.example.angel.networkingchat.utilidades.UtilFun;
+
+import java.io.IOException;
 
 public class PrivateMessageDialog extends AppCompatDialogFragment {
     private EditText txtMessage;
@@ -32,12 +41,29 @@ public class PrivateMessageDialog extends AppCompatDialogFragment {
                 .setPositiveButton("Enviar", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-
+                        sendPrivateMessage();
                     }
                 });
 
         txtMessage = view.findViewById(R.id.txt_private_msg);
 
         return builder.create();
+    }
+
+    public void sendPrivateMessage() {
+        String nick = MutableStore.getUsername();
+        String receiver = getArguments().getString(ActivePeopleFragment.RECEIVER);
+        String msg = txtMessage.getText().toString();
+
+        Pack pack = new Pack(MyState.PRIVATE_MSG);
+        pack.setNickname(nick);
+        pack.setReceiver(receiver);
+        pack.setMessage(msg);
+
+        try {
+            new MulticastPublisher(UtilFun.serialize(pack)).start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

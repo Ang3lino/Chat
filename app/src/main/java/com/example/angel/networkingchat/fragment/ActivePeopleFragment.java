@@ -1,5 +1,6 @@
 package com.example.angel.networkingchat.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -25,6 +26,8 @@ public class ActivePeopleFragment extends Fragment {
     private PersonAvailableAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
 
+    public static final String RECEIVER = "RECEIVER";
+
     private void init(View view) {
         mRecyclerView = view.findViewById(R.id.recyclerViewAvailablePeople);
 
@@ -42,8 +45,13 @@ public class ActivePeopleFragment extends Fragment {
             public void onItemClick(int position) { // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
                 String nick = MutableStore.getAvailables().get(position).getNick(); // get position from ArrayList
                 Toast.makeText(getContext(), nick, Toast.LENGTH_LONG).show();
+
                 PrivateMessageDialog dialog = new PrivateMessageDialog();
+                Bundle args = new Bundle();
+                args.putString(RECEIVER, nick);
+                dialog.setArguments(args);
                 dialog.show(getActivity().getSupportFragmentManager(), "Ejemplo");
+
             }
         });
     }

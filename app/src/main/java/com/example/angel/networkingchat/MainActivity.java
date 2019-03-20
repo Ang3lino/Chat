@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.angel.networkingchat.utilidades.MulticastPublisher;
+import com.example.angel.networkingchat.utilidades.MutableStore;
 import com.example.angel.networkingchat.utilidades.Pack;
 import com.example.angel.networkingchat.utilidades.MyState;
 import com.example.angel.networkingchat.utilidades.UtilFun;
@@ -61,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        MutableStore.setUsername(username);
 
         Intent intent = new Intent(this, ChatLobbyActivity.class);
         intent.putExtra(USERNAME, username);

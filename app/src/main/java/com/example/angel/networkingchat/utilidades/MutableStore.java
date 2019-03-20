@@ -6,6 +6,16 @@ import java.util.ArrayList;
 
 public class MutableStore {
     private static String sGlobalMessages;
+    private static String sUsername;
+    private static String sPrivateMessages;
+
+    public static String getsPrivateMessages() { return sPrivateMessages; }
+    public static void appendPrivateMessages(String msg) {
+        sPrivateMessages += msg;
+    }
+
+    public static void setUsername(String username) { sUsername = username; }
+    public static String getUsername() { return sUsername; }
 
     public static void appendGlobalMessages(String msg) {
         sGlobalMessages += msg;

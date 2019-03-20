@@ -205,6 +205,20 @@ public class ChatLobbyActivity extends AppCompatActivity {
         }
     }
 
+    private void handlePrivateMessage(final Pack p) {
+        String myUsername = MutableStore.getUsername();
+        if (p.getNickname().equals(myUsername) || p.getReceiver().equals(myUsername)) {
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+
+            String msgToAdd = String.format("%s: %s", p.getNickname(), p.getMessage());
+            if (fragment instanceof PrivateMessageFragment) {
+                // do something with the fragment
+                ((PrivateMessageFragment) fragment).appendMessage(msgToAdd);
+            }
+            MutableStore.appendPrivateMessages(msgToAdd + "\n");
+        }
+    }
+
     private void handleFileSent(final Pack p) {
         byte[] source = p.getBytes();
         String filename = p.getFile().getName();
@@ -272,6 +286,7 @@ public class ChatLobbyActivity extends AppCompatActivity {
                                 case PUBLIC_MSG: handlePublicMessage(pack); break;
                                 case LOG_IN: handleLogIn(pack); break;
                                 case FILE_SENT: handleFileSent(pack);
+                                case PRIVATE_MSG: handlePrivateMessage(pack); break;
                             }
                             //if (currentState == MyState.FILE_SENT) handleFileSent(pack);
                         }

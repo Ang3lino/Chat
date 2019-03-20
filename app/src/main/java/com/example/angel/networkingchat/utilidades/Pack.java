@@ -6,10 +6,27 @@ import java.io.Serializable;
 public class Pack implements Serializable {
     public static final long serialVersionUID = 1L;
 
-    private String nickname, message;
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getReceiver() {
+        return receiver;
+    }
+
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
+    }
+
+    private String nickname, message, receiver;
     private MyState state;
     private File file; // this may be null
     private byte[] bytes;
+
 
     public Pack(String nick, String msg, MyState state) {
         nickname = nick;
@@ -31,12 +48,12 @@ public class Pack implements Serializable {
     public String toString() {
         if (file != null) {
             StringBuilder builder = new StringBuilder();
-            for (byte aByte : bytes) builder.append(aByte);
-            return  String.format("State: %s\nNickname: %s\nMessage: %s\nFile?: %s\nBytes: %s",
-                    state, nickname, message, file.toString(), builder.toString());
+            for (byte aByte : bytes) builder.append(aByte + " ");
+            return  String.format("State: %s\nNickname: %s\nMessage: %s\nFile?: %s\nReceiver: %s\nBytes: %s\n",
+                    state, nickname, message, file.toString(), receiver, builder.toString());
         }
-        return  String.format("State: %s\nNickname: %s\nMessage: %s\nFile?: %s",
-                state, nickname, message, "null");
+        return  String.format("State: %s\nNickname: %s\nMessage: %s\nFile?: %s receiver: %s",
+                state, nickname, message, "null", receiver);
     }
 
     public void setFile(File file) { this.file = file; }
